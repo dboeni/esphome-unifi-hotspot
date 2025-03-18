@@ -1,4 +1,4 @@
-# ESPHome unifi-hotspot Ccomponent
+# ESPHome unifi-hotspot Component
 
 This is an ESPHome custom component to create a voucher code for a Unifi hotspot.
 
