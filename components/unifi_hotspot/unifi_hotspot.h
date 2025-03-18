@@ -56,7 +56,7 @@ namespace esphome {
             void play(Ts... x) override
             {
                 char* code = (char*)malloc(12);
-                if (this->parent_->generate_voucher(note_, this->expire_.value(x...), data_limit_, download_limit_, upload_limit_, code))
+                if (this->parent_->generate_voucher(note_, this->expire_.value(x...), data_limit_.value(x...), download_limit_.value(x...), upload_limit_.value(x...), code))
                 {
                     std::string response_body = code;
                     this->response_trigger_->trigger(response_body);
@@ -69,13 +69,16 @@ namespace esphome {
                 free(code);
             }
             TEMPLATABLE_VALUE(int, expire)
+                TEMPLATABLE_VALUE(std::optional<int>, data_limit)
+                TEMPLATABLE_VALUE(std::optional<int>, download_limit)
+                TEMPLATABLE_VALUE(std::optional<int>, upload_limit)
 
         private:
 
             std::string note_;
-            std::optional<int> data_limit_;
-            std::optional<int> download_limit_;
-            std::optional<int> upload_limit_;
+            //std::optional<int> data_limit_;
+            //std::optional<int> download_limit_;
+            //std::optional<int> upload_limit_;
 
             UnifiHotspotComponent* parent_;
             Trigger<std::string>* response_trigger_ = new Trigger<std::string>();

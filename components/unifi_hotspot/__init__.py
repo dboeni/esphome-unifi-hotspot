@@ -61,9 +61,9 @@ GENERATE_VOUCHER_SCHEMA = cv.Schema(
         cv.Optional(CONF_EXPIRE, default=60): cv.templatable(
             cv.int_range(min=1, max=1000000)
         ),
-        cv.Optional(CONF_DATA_LIMIT): cv.int_range(min=1, max=1048576),
-        cv.Optional(CONF_UPLOAD_LIMIT): cv.int_range(min=1, max=100),
-        cv.Optional(CONF_DOWNLOAD_LIMIT): cv.int_range(min=1, max=100),
+        cv.Optional(CONF_DATA_LIMIT): cv.templatable(cv.int_range(min=1, max=1048576)),
+        cv.Optional(CONF_UPLOAD_LIMIT): cv.templatable(cv.int_range(min=1, max=100)),
+        cv.Optional(CONF_DOWNLOAD_LIMIT): cv.templatable(cv.int_range(min=1, max=100)),
         cv.Optional(CONF_ON_RESPONSE): automation.validate_automation(single=True),
         cv.Optional(CONF_ON_ERROR): automation.validate_automation(
             {
@@ -87,11 +87,14 @@ async def generate_voucher_def_to_code(config, action_id, template_arg, args):
     template_ = await cg.templatable(config[CONF_EXPIRE], args, cg.int_)
     cg.add(var.set_expire(template_))
     if CONF_DATA_LIMIT in config:
-        cg.add(var.set_data_limit(config[CONF_DATA_LIMIT]))
+        template_ = await cg.templatable(config[CONF_DATA_LIMIT], args, cg.int_)
+        cg.add(var.set_data_limit(template_))
     if CONF_DOWNLOAD_LIMIT in config:
-        cg.add(var.set_download_limit(config[CONF_DOWNLOAD_LIMIT]))
+        template_ = await cg.templatable(config[CONF_DOWNLOAD_LIMIT], args, cg.int_)
+        cg.add(var.set_download_limit(template_))
     if CONF_UPLOAD_LIMIT in config:
-        cg.add(var.set_upload_limit(config[CONF_UPLOAD_LIMIT]))
+        template_ = await cg.templatable(config[CONF_UPLOAD_LIMIT], args, cg.int_)
+        cg.add(var.set_upload_limit(template_))
 
     if CONF_ON_RESPONSE in config:
         await automation.build_automation(
