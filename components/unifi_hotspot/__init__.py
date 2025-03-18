@@ -62,13 +62,7 @@ GENERATE_VOUCHER_SCHEMA = cv.Schema(
         cv.Optional(CONF_DATA_LIMIT): cv.int_range(min=1, max=1048576),
         cv.Optional(CONF_UPLOAD_LIMIT): cv.int_range(min=1, max=100),
         cv.Optional(CONF_DOWNLOAD_LIMIT): cv.int_range(min=1, max=100),
-        cv.Optional(CONF_ON_RESPONSE): automation.validate_automation(
-            {
-                cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(
-                    GenerateVoucherResponseTrigger
-                )
-            }
-        ),
+        cv.Optional(CONF_ON_RESPONSE): automation.validate_automation(single=True),
         cv.Optional(CONF_ON_ERROR): automation.validate_automation(
             {
                 cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(
@@ -96,16 +90,13 @@ async def generate_voucher_def_to_code(config, action_id, template_arg, args):
     if CONF_UPLOAD_LIMIT in config:
         cg.add(var.set_upload_limit(config[CONF_UPLOAD_LIMIT]))
 
-    for conf in config.get(CONF_ON_RESPONSE, []):
-        trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID])
-        cg.add(var.register_response_trigger(trigger))
+    if CONF_ON_RESPONSE in config:
         await automation.build_automation(
-            trigger,
-            [
-                (cg.std_string_ref, "code"),
-            ],
-            conf,
+            var.get_set_response_trigger(),
+            [(cg.std_string, "code")],
+            config[CONF_ON_RESPONSE],
         )
+
     for conf in config.get(CONF_ON_ERROR, []):
         trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID])
         cg.add(var.register_error_trigger(trigger))

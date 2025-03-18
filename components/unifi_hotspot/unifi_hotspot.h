@@ -11,14 +11,6 @@
 namespace esphome {
     namespace unifi_hotspot {
 
-        class GenerateVoucherResponseTrigger : public Trigger<std::string&> {
-        public:
-            void process(std::string& code)
-            {
-                this->trigger(code);
-            }
-        };
-
         class UnifiHotspotComponent : public Component {
         public:
             void dump_config() override;
@@ -59,7 +51,7 @@ namespace esphome {
             void set_download_limit(int value) { this->download_limit_ = value; }
             void set_upload_limit(int value) { this->upload_limit_ = value; }
 
-            void register_response_trigger(GenerateVoucherResponseTrigger* trigger) { this->response_triggers_.push_back(trigger); }
+            Trigger<std::string>* get_set_response_trigger() const { return response_trigger_; }
             void register_error_trigger(Trigger<>* trigger) { this->error_triggers_.push_back(trigger); }
 
             void play(Ts... x) override
@@ -68,18 +60,7 @@ namespace esphome {
                 if (this->parent_->generate_voucher(note_, expire_, data_limit_, download_limit_, upload_limit_, code))
                 {
                     std::string response_body = code;
-                    if (this->response_triggers_.size() == 1)
-                    {
-                        this->response_triggers_[0]->process(response_body);
-                    }
-                    else
-                    {
-                        for (auto* trigger : this->response_triggers_)
-                        {
-                            auto response_body_copy = std::string(response_body);
-                            trigger->process(response_body_copy);
-                        }
-                    }
+                    this->response_trigger_->trigger(response_body);
                 }
                 else
                 {
@@ -90,6 +71,7 @@ namespace esphome {
             }
 
         private:
+
             std::string note_;
             int expire_;
             std::optional<int> data_limit_;
@@ -97,7 +79,7 @@ namespace esphome {
             std::optional<int> upload_limit_;
 
             UnifiHotspotComponent* parent_;
-            std::vector<GenerateVoucherResponseTrigger*> response_triggers_{};
+            Trigger<std::string>* response_trigger_ = new Trigger<std::string>();
             std::vector<Trigger<>*> error_triggers_{};
         };
 
