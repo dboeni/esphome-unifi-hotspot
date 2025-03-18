@@ -46,7 +46,6 @@ namespace esphome {
             GenerateVoucherAction(UnifiHotspotComponent* parent) : parent_(parent) {}
 
             void set_note(std::string value) { this->note_ = value; }
-            void set_expire(int value) { this->expire_ = value; }
             void set_data_limit(int value) { this->data_limit_ = value; }
             void set_download_limit(int value) { this->download_limit_ = value; }
             void set_upload_limit(int value) { this->upload_limit_ = value; }
@@ -57,7 +56,7 @@ namespace esphome {
             void play(Ts... x) override
             {
                 char* code = (char*)malloc(12);
-                if (this->parent_->generate_voucher(note_, expire_, data_limit_, download_limit_, upload_limit_, code))
+                if (this->parent_->generate_voucher(note_, this->expire_.value(x...), data_limit_, download_limit_, upload_limit_, code))
                 {
                     std::string response_body = code;
                     this->response_trigger_->trigger(response_body);
@@ -69,11 +68,11 @@ namespace esphome {
                 }
                 free(code);
             }
+            TEMPLATABLE_VALUE(int, expire)
 
         private:
 
             std::string note_;
-            int expire_;
             std::optional<int> data_limit_;
             std::optional<int> download_limit_;
             std::optional<int> upload_limit_;
